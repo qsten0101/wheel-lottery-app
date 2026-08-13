@@ -11,15 +11,6 @@
 - `service-worker.js`：離線快取
 - `icon-192.png`、`icon-512.png`：手機主畫面圖示
 
-## 上傳 GitHub Pages
-
-1. 建立 GitHub repository，例如 `wheel-lottery-app`。
-2. 將本資料夾所有檔案上傳到 repository 根目錄。
-3. 到 `Settings` → `Pages`。
-4. Source 選 `Deploy from a branch`。
-5. Branch 選 `main`，Folder 選 `/root`。
-6. 儲存後開啟 GitHub Pages 網址。
-
 ## 手機使用
 
 - Android：用 Chrome 開啟網址，選「新增至主畫面」或「安裝應用程式」。
