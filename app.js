@@ -16,6 +16,7 @@ const closeAdminBtn = document.getElementById("closeAdminBtn");
 const loginAdminBtn = document.getElementById("loginAdminBtn");
 const applyBtn = document.getElementById("applyBtn");
 const sampleBtn = document.getElementById("sampleBtn");
+const clearItemsBtn = document.getElementById("clearItemsBtn");
 const saveWeightsBtn = document.getElementById("saveWeightsBtn");
 const setAllOneBtn = document.getElementById("setAllOneBtn");
 const setAllZeroBtn = document.getElementById("setAllZeroBtn");
@@ -291,6 +292,11 @@ function applyItems() {
   drawWheel();
   showToast("獎項已套用");
 }
+function clearItemsSetting() {
+  itemsInput.value = "";
+  showToast("已清除後台獎項輸入框，尚未影響目前轉盤");
+  itemsInput.focus();
+}
 function saveWeightEditor() {
   const nextWeights = {};
   weightEditor.querySelectorAll("input").forEach((input) => {
@@ -336,6 +342,7 @@ loginAdminBtn.addEventListener("click", loginAdmin);
 adminPassword.addEventListener("keydown", (e) => { if (e.key === "Enter") loginAdmin(); });
 applyBtn.addEventListener("click", applyItems);
 sampleBtn.addEventListener("click", () => { itemsInput.value = DEFAULT_ITEMS.join("\n"); showToast("已載入範例，按套用獎項即可使用"); });
+clearItemsBtn.addEventListener("click", clearItemsSetting);
 saveWeightsBtn.addEventListener("click", saveWeightEditor);
 setAllOneBtn.addEventListener("click", () => updateAllWeight(1));
 setAllZeroBtn.addEventListener("click", () => updateAllWeight(0));
