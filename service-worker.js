@@ -1,4 +1,4 @@
-const CACHE_NAME = "wheel-lottery-v1";
+const CACHE_NAME = "wheel-lottery-admin-v3";
 const FILES = [
   "./",
   "./index.html",

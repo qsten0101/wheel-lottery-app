@@ -15,9 +15,12 @@
       <div>
         <p class="eyebrow">Lucky Wheel</p>
         <h1>轉盤抽抽樂</h1>
-        <p class="subtitle">可直接上傳 GitHub Pages，手機開啟後也能加入主畫面使用。</p>
+        <p class="subtitle">支援後台倍率調整，可直接上傳 GitHub Pages，手機也能加入主畫面。</p>
       </div>
-      <button id="resetBtn" class="ghost-button" type="button">重設名單</button>
+      <div class="hero-actions">
+        <button id="adminBtn" class="ghost-button" type="button">後台倍率</button>
+        <button id="resetBtn" class="ghost-button" type="button">重設名單</button>
+      </div>
     </section>
 
     <section class="layout">
@@ -32,7 +35,7 @@
 
       <section class="panel" aria-label="獎項設定">
         <h2>獎項設定</h2>
-        <p class="hint">每行一個項目。若要提高中獎機率，可重複輸入同一項。</p>
+        <p class="hint">每行一個項目。倍率請到「後台倍率」設定，倍率越高越容易抽中。</p>
         <textarea id="itemsInput" spellcheck="false"></textarea>
         <div class="actions">
           <button id="applyBtn" type="button">套用項目</button>
@@ -42,6 +45,14 @@
         <div class="result-box">
           <span>本次結果</span>
           <strong id="resultText">尚未抽獎</strong>
+        </div>
+
+        <div class="odds-box">
+          <div class="history-head">
+            <h3>目前倍率</h3>
+            <button id="refreshOddsBtn" class="text-button" type="button">刷新</button>
+          </div>
+          <div id="oddsList" class="odds-list"></div>
         </div>
 
         <div class="history">
@@ -54,6 +65,40 @@
       </section>
     </section>
   </main>
+
+  <dialog id="adminDialog" class="admin-dialog">
+    <form method="dialog" class="admin-card">
+      <div class="admin-head">
+        <div>
+          <p class="eyebrow">Admin</p>
+          <h2>後台倍率調整</h2>
+          <p class="hint">倍率 0 代表不會被抽中，倍率 1 為基本機率，倍率 5 約為 1 的五倍權重。</p>
+        </div>
+        <button id="closeAdminBtn" class="close-button" type="button" aria-label="關閉">×</button>
+      </div>
+
+      <div class="admin-login" id="adminLoginBox">
+        <label for="adminPassword">管理密碼</label>
+        <div class="password-row">
+          <input id="adminPassword" type="password" placeholder="預設：admin123" autocomplete="current-password" />
+          <button id="loginAdminBtn" type="button">登入</button>
+        </div>
+        <p class="hint">這是前端本機簡易保護，不適合保護真正機密資料。部署前可以在 app.js 修改預設密碼。</p>
+      </div>
+
+      <div class="admin-content hidden" id="adminContentBox">
+        <div class="admin-tools">
+          <button id="setAllOneBtn" type="button" class="secondary">全部設為 1</button>
+          <button id="setAllZeroBtn" type="button" class="secondary">全部設為 0</button>
+          <button id="saveWeightsBtn" type="button">儲存倍率</button>
+        </div>
+        <div id="weightEditor" class="weight-editor"></div>
+        <div class="admin-note">
+          <strong>抽獎邏輯：</strong>系統會依照每個項目的倍率做加權亂數。例如 A 倍率 1、B 倍率 3，B 的中獎權重約為 A 的 3 倍。
+        </div>
+      </div>
+    </form>
+  </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
