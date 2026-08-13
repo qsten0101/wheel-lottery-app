@@ -1,0 +1,22 @@
+{
+  "name": "轉盤抽抽樂",
+  "short_name": "抽抽樂",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f2ff",
+  "theme_color": "#7c3aed",
+  "description": "可上傳 GitHub Pages 的手機轉盤抽獎工具",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

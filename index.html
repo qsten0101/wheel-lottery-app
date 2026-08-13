@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#7c3aed" />
+  <title>轉盤抽抽樂</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Lucky Wheel</p>
+        <h1>轉盤抽抽樂</h1>
+        <p class="subtitle">可直接上傳 GitHub Pages，手機開啟後也能加入主畫面使用。</p>
+      </div>
+      <button id="resetBtn" class="ghost-button" type="button">重設名單</button>
+    </section>
+
+    <section class="layout">
+      <section class="wheel-card" aria-label="抽獎轉盤">
+        <div class="wheel-wrap">
+          <div class="pointer" aria-hidden="true"></div>
+          <canvas id="wheelCanvas" width="720" height="720"></canvas>
+          <button id="spinBtn" class="spin-button" type="button">開始</button>
+        </div>
+        <p id="statusText" class="status">請按「開始」抽出結果</p>
+      </section>
+
+      <section class="panel" aria-label="獎項設定">
+        <h2>獎項設定</h2>
+        <p class="hint">每行一個項目。若要提高中獎機率，可重複輸入同一項。</p>
+        <textarea id="itemsInput" spellcheck="false"></textarea>
+        <div class="actions">
+          <button id="applyBtn" type="button">套用項目</button>
+          <button id="sampleBtn" class="secondary" type="button">載入範例</button>
+        </div>
+
+        <div class="result-box">
+          <span>本次結果</span>
+          <strong id="resultText">尚未抽獎</strong>
+        </div>
+
+        <div class="history">
+          <div class="history-head">
+            <h3>抽獎紀錄</h3>
+            <button id="clearHistoryBtn" class="text-button" type="button">清除</button>
+          </div>
+          <ol id="historyList"></ol>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js');
+      });
+    }
+  </script>
+</body>
+</html>
