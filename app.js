@@ -3,7 +3,7 @@ const COLORS = ["#f97316", "#facc15", "#22c55e", "#06b6d4", "#3b82f6", "#8b5cf6"
 const STORAGE_ITEMS = "wheel_lottery_items";
 const STORAGE_HISTORY = "wheel_lottery_history";
 const STORAGE_WEIGHTS = "wheel_lottery_weights";
-const ADMIN_PASSWORD = "admin123";
+const ADMIN_PASSWORD = "123";
 
 const canvas = document.getElementById("wheelCanvas");
 const ctx = canvas.getContext("2d");
