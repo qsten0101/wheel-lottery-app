@@ -31,19 +31,3 @@ const ADMIN_PASSWORD = "admin123";
 改成你要的密碼即可。
 
 注意：這是純前端本機簡易保護，密碼仍然在程式碼中，不適合保護真正機密資料。
-
-## 上傳 GitHub Pages
-
-1. 將本資料夾所有檔案上傳到 repository 根目錄。
-2. 到 `Settings` → `Pages`。
-3. Source 選 `Deploy from a branch`。
-4. Branch 選 `main`，Folder 選 `/root`。
-5. 儲存後開啟 GitHub Pages 網址。
-
-
-## v3 修正
-
-- 修正指針停在的轉盤項目與右側「本次結果」不一致。
-- 轉盤停止角度改為與 `drawWheel()` 使用相同的 -90 度座標系。
-- 調整轉盤文字顯示，降低倒置與貼近外圈的問題。
-- 壓縮本次結果區塊高度。
