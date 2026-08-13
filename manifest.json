@@ -6,7 +6,7 @@
   "display": "standalone",
   "background_color": "#f7f2ff",
   "theme_color": "#7c3aed",
-  "description": "支援後台倍率調整的手機轉盤抽獎工具",
+  "description": "後台設定獎項與倍率的手機轉盤抽獎工具",
   "icons": [
     {
       "src": "icon-192.png",

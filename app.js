@@ -8,20 +8,22 @@ const ADMIN_PASSWORD = "123";
 const canvas = document.getElementById("wheelCanvas");
 const ctx = canvas.getContext("2d");
 const spinBtn = document.getElementById("spinBtn");
-const applyBtn = document.getElementById("applyBtn");
-const sampleBtn = document.getElementById("sampleBtn");
+const adminBtn = document.getElementById("adminBtn");
 const resetBtn = document.getElementById("resetBtn");
 const clearHistoryBtn = document.getElementById("clearHistoryBtn");
-const refreshOddsBtn = document.getElementById("refreshOddsBtn");
-const adminBtn = document.getElementById("adminBtn");
+const closeWinnerBtn = document.getElementById("closeWinnerBtn");
 const closeAdminBtn = document.getElementById("closeAdminBtn");
 const loginAdminBtn = document.getElementById("loginAdminBtn");
+const applyBtn = document.getElementById("applyBtn");
+const sampleBtn = document.getElementById("sampleBtn");
 const saveWeightsBtn = document.getElementById("saveWeightsBtn");
 const setAllOneBtn = document.getElementById("setAllOneBtn");
 const setAllZeroBtn = document.getElementById("setAllZeroBtn");
+const refreshOddsBtn = document.getElementById("refreshOddsBtn");
 const itemsInput = document.getElementById("itemsInput");
 const adminPassword = document.getElementById("adminPassword");
 const resultText = document.getElementById("resultText");
+const popupWinnerText = document.getElementById("popupWinnerText");
 const statusText = document.getElementById("statusText");
 const historyList = document.getElementById("historyList");
 const oddsList = document.getElementById("oddsList");
@@ -30,13 +32,14 @@ const adminDialog = document.getElementById("adminDialog");
 const adminLoginBox = document.getElementById("adminLoginBox");
 const adminContentBox = document.getElementById("adminContentBox");
 const weightEditor = document.getElementById("weightEditor");
+const winnerPopup = document.getElementById("winnerPopup");
+const confetti = document.querySelector(".confetti");
 
 let items = loadItems();
-let history = loadHistory();
 let weights = loadWeights();
+let history = loadHistory();
 let rotation = 0;
 let isSpinning = false;
-let currentWinnerIndex = 0;
 let isAdminLoggedIn = false;
 
 function loadItems() {
@@ -47,14 +50,6 @@ function loadItems() {
   return DEFAULT_ITEMS;
 }
 
-function loadHistory() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_HISTORY));
-    if (Array.isArray(saved)) return saved;
-  } catch (error) { console.warn("讀取紀錄失敗", error); }
-  return [];
-}
-
 function loadWeights() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_WEIGHTS));
@@ -63,27 +58,25 @@ function loadWeights() {
   return {};
 }
 
+function loadHistory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_HISTORY));
+    if (Array.isArray(saved)) return saved;
+  } catch (error) { console.warn("讀取紀錄失敗", error); }
+  return [];
+}
+
 function saveItems() { localStorage.setItem(STORAGE_ITEMS, JSON.stringify(items)); }
-function saveHistory() { localStorage.setItem(STORAGE_HISTORY, JSON.stringify(history.slice(0, 30))); }
 function saveWeights() { localStorage.setItem(STORAGE_WEIGHTS, JSON.stringify(weights)); }
+function saveHistory() { localStorage.setItem(STORAGE_HISTORY, JSON.stringify(history.slice(0, 50))); }
 function getWeight(item) {
   const value = Number(weights[item]);
   return Number.isFinite(value) && value >= 0 ? value : 1;
 }
 function getTotalWeight() { return items.reduce((sum, item) => sum + getWeight(item), 0); }
-
-function normalizeItems(text) {
-  return text.split("\n").map((item) => item.trim()).filter(Boolean).slice(0, 60);
-}
-
-function showToast(message) {
-  toast.textContent = message;
-  toast.classList.add("show");
-  window.setTimeout(() => toast.classList.remove("show"), 1600);
-}
-
+function normalizeItems(text) { return text.split("\n").map((item) => item.trim()).filter(Boolean).slice(0, 80); }
+function showToast(message) { toast.textContent = message; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 1600); }
 function syncInput() { itemsInput.value = items.join("\n"); }
-
 function syncWeightsWithItems() {
   const nextWeights = {};
   items.forEach((item) => { nextWeights[item] = getWeight(item); });
@@ -122,15 +115,14 @@ function drawWheel() {
     ctx.closePath();
     ctx.fillStyle = weight === 0 ? "#9ca3af" : COLORS[index % COLORS.length];
     ctx.fill();
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.75)";
+    ctx.strokeStyle = "rgba(255,255,255,.78)";
     ctx.lineWidth = 5;
     ctx.stroke();
+
     ctx.save();
     const textAngle = start + angle / 2;
-    const textRadius = radius * 0.68;
+    const textRadius = radius * 0.66;
     ctx.rotate(textAngle);
-
-    // Keep labels readable: flip text on the left side of the wheel.
     const normalizedTextAngle = ((textAngle + rotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
     const shouldFlipText = normalizedTextAngle > Math.PI / 2 && normalizedTextAngle < Math.PI * 1.5;
     if (shouldFlipText) {
@@ -141,39 +133,32 @@ function drawWheel() {
       ctx.textAlign = "right";
       ctx.translate(textRadius, 0);
     }
-
     ctx.textBaseline = "middle";
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#fff";
     ctx.font = getFont(item, items.length);
-    ctx.shadowColor = "rgba(0, 0, 0, 0.28)";
+    ctx.shadowColor = "rgba(0,0,0,.28)";
     ctx.shadowBlur = 4;
-    ctx.fillText(shorten(item), 0, -10);
-    ctx.font = "800 22px system-ui, -apple-system, 'Noto Sans TC', sans-serif";
-    ctx.fillText(`x${weight}`, 0, 24);
+    ctx.fillText(shorten(item), 0, 0);
     ctx.restore();
   });
 
   ctx.beginPath();
   ctx.arc(0, 0, 78, 0, Math.PI * 2);
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "#fff";
   ctx.fill();
   ctx.lineWidth = 8;
-  ctx.strokeStyle = "rgba(124, 58, 237, 0.35)";
+  ctx.strokeStyle = "rgba(124,58,237,.35)";
   ctx.stroke();
   ctx.restore();
 }
 
 function getFont(text, count) {
   const length = [...text].length;
-  const base = count > 16 ? 20 : count > 10 ? 24 : 30;
-  const size = Math.max(16, Math.min(base, Math.floor(230 / Math.max(length, 4))));
+  const base = count > 16 ? 20 : count > 10 ? 24 : 31;
+  const size = Math.max(16, Math.min(base, Math.floor(250 / Math.max(length, 4))));
   return `900 ${size}px system-ui, -apple-system, "Noto Sans TC", sans-serif`;
 }
-
-function shorten(text) {
-  const chars = [...text];
-  return chars.length > 12 ? `${chars.slice(0, 12).join("")}…` : text;
-}
+function shorten(text) { const chars = [...text]; return chars.length > 12 ? `${chars.slice(0, 12).join("")}…` : text; }
 
 function pickWeightedWinnerIndex() {
   const total = getTotalWeight();
@@ -188,27 +173,19 @@ function pickWeightedWinnerIndex() {
 
 function calculateRotationToIndex(index) {
   const anglePerItem = (Math.PI * 2) / items.length;
-
-  // drawWheel() starts every segment at -90 degrees.
-  // Therefore the visual center of item[index] before wheel rotation is:
-  // index * anglePerItem - PI / 2 + anglePerItem / 2.
-  // The pointer is also at -90 degrees, so target rotation must use the same coordinate system.
-  // This fixes the previous mismatch where the displayed result and pointer segment were different.
   const baseSegmentCenter = index * anglePerItem - Math.PI / 2 + anglePerItem / 2;
   const pointerAngle = -Math.PI / 2;
-  const jitter = (Math.random() - 0.5) * anglePerItem * 0.46;
-
+  const jitter = (Math.random() - 0.5) * anglePerItem * 0.42;
   return pointerAngle - baseSegmentCenter + jitter;
 }
 
 function spin() {
   if (isSpinning) return;
-  if (items.length < 2) { showToast("請至少輸入 2 個項目"); return; }
-  if (getTotalWeight() <= 0) { showToast("所有倍率都是 0，請先設定至少一個可抽項目"); return; }
+  if (items.length < 2) { showToast("請至少設定 2 個獎項"); return; }
+  if (getTotalWeight() <= 0) { showToast("所有倍率都是 0，請先到後台設定至少一個可抽項目"); return; }
 
-  currentWinnerIndex = pickWeightedWinnerIndex();
-  if (currentWinnerIndex < 0) return;
-
+  const winnerIndex = pickWeightedWinnerIndex();
+  const winner = items[winnerIndex];
   isSpinning = true;
   spinBtn.disabled = true;
   resultText.textContent = "抽獎中...";
@@ -216,8 +193,7 @@ function spin() {
 
   const extraRotations = 6 + Math.floor(Math.random() * 4);
   const startRotation = rotation;
-  const stopRotation = calculateRotationToIndex(currentWinnerIndex);
-  const targetRotation = extraRotations * Math.PI * 2 + stopRotation;
+  const targetRotation = extraRotations * Math.PI * 2 + calculateRotationToIndex(winnerIndex);
   const duration = 4600;
   const startTime = performance.now();
 
@@ -227,58 +203,49 @@ function spin() {
     rotation = startRotation + (targetRotation - startRotation) * eased;
     drawWheel();
     if (progress < 1) { requestAnimationFrame(animate); return; }
-
     rotation = targetRotation % (Math.PI * 2);
     drawWheel();
-    const winner = items[currentWinnerIndex];
     resultText.textContent = winner;
     statusText.textContent = `恭喜抽中：${winner}`;
     addHistory(winner);
+    showWinnerPopup(winner);
     isSpinning = false;
     spinBtn.disabled = false;
   }
   requestAnimationFrame(animate);
 }
 
-function applyItems() {
-  const nextItems = normalizeItems(itemsInput.value);
-  if (nextItems.length < 2) { showToast("請至少輸入 2 個項目"); return; }
-  items = nextItems;
-  syncWeightsWithItems();
-  rotation = 0;
-  resultText.textContent = "尚未抽獎";
-  statusText.textContent = "已套用新項目，請按「開始」抽獎";
-  drawWheel();
-  renderOdds();
-  if (isAdminLoggedIn) renderWeightEditor();
-  showToast("項目已套用，倍率已同步");
+function showWinnerPopup(winner) {
+  popupWinnerText.textContent = winner;
+  confetti.innerHTML = "";
+  const colors = ["#f97316", "#facc15", "#22c55e", "#06b6d4", "#8b5cf6", "#ec4899", "#ef4444"];
+  for (let i = 0; i < 48; i += 1) {
+    const piece = document.createElement("span");
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.background = colors[i % colors.length];
+    piece.style.animationDelay = `${Math.random() * 0.35}s`;
+    piece.style.animationDuration = `${1.4 + Math.random() * 1.2}s`;
+    piece.style.transform = `rotate(${Math.random() * 180}deg)`;
+    confetti.appendChild(piece);
+  }
+  winnerPopup.classList.add("show");
+  winnerPopup.setAttribute("aria-hidden", "false");
 }
+function closeWinnerPopup() { winnerPopup.classList.remove("show"); winnerPopup.setAttribute("aria-hidden", "true"); }
 
 function addHistory(winner) {
   const now = new Date();
   const time = now.toLocaleString("zh-TW", { hour12: false });
   history.unshift({ winner, time, weight: getWeight(winner) });
-  history = history.slice(0, 30);
+  history = history.slice(0, 50);
   saveHistory();
   renderHistory();
 }
-
 function renderHistory() {
   historyList.innerHTML = "";
-  if (history.length === 0) {
-    const empty = document.createElement("li");
-    empty.textContent = "尚無紀錄";
-    historyList.appendChild(empty);
-    return;
-  }
-  history.forEach((record) => {
-    const li = document.createElement("li");
-    const weightText = record.weight !== undefined ? `，倍率 x${record.weight}` : "";
-    li.textContent = `${record.winner}${weightText}（${record.time}）`;
-    historyList.appendChild(li);
-  });
+  if (history.length === 0) { const empty = document.createElement("li"); empty.textContent = "尚無紀錄"; historyList.appendChild(empty); return; }
+  history.forEach((record) => { const li = document.createElement("li"); li.textContent = `${record.winner}（${record.time}）`; historyList.appendChild(li); });
 }
-
 function renderOdds() {
   oddsList.innerHTML = "";
   const total = getTotalWeight();
@@ -292,58 +259,6 @@ function renderOdds() {
     oddsList.appendChild(row);
   });
 }
-
-function resetItems() {
-  items = DEFAULT_ITEMS;
-  weights = {};
-  DEFAULT_ITEMS.forEach((item) => { weights[item] = 1; });
-  saveItems();
-  saveWeights();
-  syncInput();
-  rotation = 0;
-  resultText.textContent = "尚未抽獎";
-  statusText.textContent = "已重設為預設名單與倍率";
-  drawWheel();
-  renderOdds();
-  if (isAdminLoggedIn) renderWeightEditor();
-  showToast("已重設名單與倍率");
-}
-
-function clearHistory() {
-  history = [];
-  saveHistory();
-  renderHistory();
-  showToast("紀錄已清除");
-}
-
-function openAdmin() {
-  adminDialog.showModal();
-  if (isAdminLoggedIn) {
-    adminLoginBox.classList.add("hidden");
-    adminContentBox.classList.remove("hidden");
-    renderWeightEditor();
-  } else {
-    adminLoginBox.classList.remove("hidden");
-    adminContentBox.classList.add("hidden");
-    adminPassword.value = "";
-    setTimeout(() => adminPassword.focus(), 50);
-  }
-}
-
-function closeAdmin() { adminDialog.close(); }
-
-function loginAdmin() {
-  if (adminPassword.value !== ADMIN_PASSWORD) {
-    showToast("管理密碼錯誤");
-    return;
-  }
-  isAdminLoggedIn = true;
-  adminLoginBox.classList.add("hidden");
-  adminContentBox.classList.remove("hidden");
-  renderWeightEditor();
-  showToast("已進入倍率後台");
-}
-
 function renderWeightEditor() {
   weightEditor.innerHTML = "";
   items.forEach((item) => {
@@ -361,12 +276,21 @@ function renderWeightEditor() {
     row.append(span, input);
     weightEditor.appendChild(row);
   });
+  renderOdds();
 }
-
-function updateAllWeight(value) {
-  weightEditor.querySelectorAll("input").forEach((input) => { input.value = value; });
+function applyItems() {
+  const nextItems = normalizeItems(itemsInput.value);
+  if (nextItems.length < 2) { showToast("請至少輸入 2 個獎項"); return; }
+  items = nextItems;
+  syncWeightsWithItems();
+  saveItems();
+  rotation = 0;
+  resultText.textContent = "尚未抽獎";
+  statusText.textContent = "獎項已更新，請按「開始」抽獎";
+  renderWeightEditor();
+  drawWheel();
+  showToast("獎項已套用");
 }
-
 function saveWeightEditor() {
   const nextWeights = {};
   weightEditor.querySelectorAll("input").forEach((input) => {
@@ -379,24 +303,50 @@ function saveWeightEditor() {
   renderOdds();
   showToast("倍率已儲存");
 }
+function resetAll() {
+  items = [...DEFAULT_ITEMS];
+  weights = {};
+  items.forEach((item) => { weights[item] = 1; });
+  history = [];
+  saveItems(); saveWeights(); saveHistory();
+  syncInput(); renderHistory(); renderWeightEditor();
+  resultText.textContent = "尚未抽獎";
+  statusText.textContent = "已重設獎項、倍率與紀錄";
+  rotation = 0; drawWheel(); showToast("已重設");
+}
+function clearHistory() { history = []; saveHistory(); renderHistory(); showToast("紀錄已清除"); }
+function openAdmin() {
+  adminDialog.showModal();
+  if (isAdminLoggedIn) { adminLoginBox.classList.add("hidden"); adminContentBox.classList.remove("hidden"); syncInput(); renderWeightEditor(); }
+  else { adminLoginBox.classList.remove("hidden"); adminContentBox.classList.add("hidden"); adminPassword.value = ""; setTimeout(() => adminPassword.focus(), 50); }
+}
+function loginAdmin() {
+  if (adminPassword.value !== ADMIN_PASSWORD) { showToast("管理密碼錯誤"); return; }
+  isAdminLoggedIn = true;
+  adminLoginBox.classList.add("hidden"); adminContentBox.classList.remove("hidden"); syncInput(); renderWeightEditor(); showToast("已進入後台");
+}
+function updateAllWeight(value) { weightEditor.querySelectorAll("input").forEach((input) => { input.value = value; }); }
 
 spinBtn.addEventListener("click", spin);
-applyBtn.addEventListener("click", applyItems);
-sampleBtn.addEventListener("click", () => { itemsInput.value = DEFAULT_ITEMS.join("\n"); showToast("已載入範例，按套用項目即可使用"); });
-resetBtn.addEventListener("click", resetItems);
-clearHistoryBtn.addEventListener("click", clearHistory);
-refreshOddsBtn.addEventListener("click", renderOdds);
 adminBtn.addEventListener("click", openAdmin);
-closeAdminBtn.addEventListener("click", closeAdmin);
+resetBtn.addEventListener("click", resetAll);
+clearHistoryBtn.addEventListener("click", clearHistory);
+closeAdminBtn.addEventListener("click", () => adminDialog.close());
 loginAdminBtn.addEventListener("click", loginAdmin);
-adminPassword.addEventListener("keydown", (event) => { if (event.key === "Enter") loginAdmin(); });
+adminPassword.addEventListener("keydown", (e) => { if (e.key === "Enter") loginAdmin(); });
+applyBtn.addEventListener("click", applyItems);
+sampleBtn.addEventListener("click", () => { itemsInput.value = DEFAULT_ITEMS.join("\n"); showToast("已載入範例，按套用獎項即可使用"); });
 saveWeightsBtn.addEventListener("click", saveWeightEditor);
 setAllOneBtn.addEventListener("click", () => updateAllWeight(1));
 setAllZeroBtn.addEventListener("click", () => updateAllWeight(0));
+refreshOddsBtn.addEventListener("click", renderOdds);
+closeWinnerBtn.addEventListener("click", closeWinnerPopup);
+winnerPopup.addEventListener("click", (event) => { if (event.target === winnerPopup) closeWinnerPopup(); });
 window.addEventListener("resize", fitCanvas);
 
 syncWeightsWithItems();
+saveItems();
 syncInput();
 renderHistory();
-renderOdds();
+renderWeightEditor();
 fitCanvas();
